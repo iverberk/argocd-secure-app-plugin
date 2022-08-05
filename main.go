@@ -125,6 +125,10 @@ func manifests(path string) ([]byte, error) {
 
 		manifest, err := os.ReadFile(filepath.Join(path, f.Name()))
 		if err == nil {
+			if len(manifest) == 0 {
+				log.Warn().Str("file", f.Name()).Err(err).Msg("Skipping empty manifest file")
+				continue
+			}
 			manifest = append([]byte(YAML_DELIMITER), decrypt(manifest)...)
 			manifests = append(manifests, manifest...)
 		} else {
