@@ -82,6 +82,7 @@ metadata:
 data:
   allowed: '"true"'
   color: purple
+
 ---
 apiVersion: v1
 kind: Secret
@@ -91,3 +92,4 @@ type: Opaque
 data:
   USER_NAME: YWRtaW4=
   PASSWORD: MWYyZDFlMmU2N2Rm
+

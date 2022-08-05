@@ -132,6 +132,8 @@ func manifests(path string) ([]byte, error) {
 		}
 	}
 
+	manifests = append(manifests, []byte("\n")...)
+
 	return manifests, nil
 }
 
