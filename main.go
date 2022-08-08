@@ -233,5 +233,11 @@ func main() {
 		log.Fatal().Err(err).Msg("Unable to determine current directory")
 	}
 
+	// Argo CD adds an ARGOCD_ENV_ prefix to all application-defined environment variables.
+	// Strip that prefix so that SOPS can find its decryption key based on SOPS_AGE_KEY_FILE.
+	if value, ok := os.LookupEnv("ARGOCD_ENV_SOPS_AGE_KEY_FILE"); ok {
+		os.Setenv("SOPS_AGE_KEY_FILE", strings.TrimPrefix(value, "ARGOCD_ENV_"))
+	}
+
 	fmt.Printf("%s", generate(rootDir))
 }
