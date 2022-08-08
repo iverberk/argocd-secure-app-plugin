@@ -184,7 +184,8 @@ func generate(rootDir string) string {
 	// iterating is safe because deleted items will simply be skipped.
 	for s1 := range sources {
 		for s2 := range sources {
-			if s1 != s2 && strings.HasPrefix(s2, s1) {
+			if s1 != s2 && strings.HasPrefix(s2, s1+"/") {
+				log.Info().Str("s1", s1).Str("s2", s2).Msg("Compare")
 				delete(sources, s2)
 			}
 		}
