@@ -45,11 +45,35 @@ func decrypt(data []byte) []byte {
 func helm(source string) ([]byte, error) {
 
 	// Load the Chart metadata.
-	_, err := loader.Load(source)
+	chart, err := loader.Load(source)
 	if err != nil {
 		log.Warn().Err(err).Str("source", source).Msg("Unable to load Helm chart data, assuming this is not a Helm chart")
 		return nil, nil
 	}
+
+	// Check if we are pulling from a private Helm repository. If so, pre-add all the repositories
+	// with username and password.
+	if _, ok := os.LookupEnv("ARGOCD_ENV_HELM_PRIVATE"); ok {
+		username := os.Getenv("ARGCDO_ENV_HELM_USERNAME")
+		password := os.Getenv("ARGCDO_ENV_HELM_PASSWORD")
+
+		for _, dependency := range chart.Metadata.Dependencies {
+
+			log.Info().Str("Repository", dependency.Repository).Msg("Adding new Helm repo")
+			out, err := exec.Command(
+				"helm", "repo", "add",
+				dependency.Name,
+				dependency.Repository,
+				"--username", username,
+				"--password", password,
+			).CombinedOutput()
+			if err != nil {
+				log.Fatal().Str("error output", string(out)).Err(err).Msg("Helm repo add command failed")
+			}
+		}
+	}
+
+	log.Info().Str("Dependencies", chart.Metadata.Dependencies[0].Repository).Msg("blaat")
 
 	// Gather values files. We check for a `values.yaml` file
 	// in the root directory. All other values files, encrypted
