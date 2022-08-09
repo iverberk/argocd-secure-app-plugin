@@ -52,28 +52,38 @@ func helm(source string) ([]byte, error) {
 	}
 
 	// Check if we are pulling from a private Helm repository. If so, pre-add all the repositories
-	// with username and password.
+	// with username and password. Also set a custom CA bundle if it is provided.
 	if _, ok := os.LookupEnv("ARGOCD_ENV_HELM_PRIVATE"); ok {
+
+		// Build credentials arguments
+		var credArgs []string
 		username := os.Getenv("ARGCDO_ENV_HELM_USERNAME")
 		password := os.Getenv("ARGCDO_ENV_HELM_PASSWORD")
+		if username != "" && password != "" {
+			credArgs = append(credArgs, "--username", username, "--password", password)
+		}
+
+		// Build CA bundle arguments
+		var caArgs []string
+		caFile := os.Getenv("ARGOCD_ENV_HELM_CA_FILE")
+		if caFile != "" {
+			caArgs = append(caArgs, "--ca-file", caFile)
+		}
 
 		for _, dependency := range chart.Metadata.Dependencies {
-
 			log.Info().Str("Repository", dependency.Repository).Msg("Adding new Helm repo")
-			out, err := exec.Command(
-				"helm", "repo", "add",
-				dependency.Name,
-				dependency.Repository,
-				"--username", username,
-				"--password", password,
-			).CombinedOutput()
+
+			var args = []string{"repo", "add", dependency.Name, dependency.Repository}
+
+			args = append(args, credArgs...)
+			args = append(args, caArgs...)
+
+			out, err := exec.Command("helm", args...).CombinedOutput()
 			if err != nil {
 				log.Fatal().Str("error output", string(out)).Err(err).Msg("Helm repo add command failed")
 			}
 		}
 	}
-
-	log.Info().Str("Dependencies", chart.Metadata.Dependencies[0].Repository).Msg("blaat")
 
 	// Gather values files. We check for a `values.yaml` file
 	// in the root directory. All other values files, encrypted
