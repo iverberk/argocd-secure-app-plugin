@@ -1,0 +1,22 @@
+hello-world:
+    replicaCount: ENC[AES256_GCM,data:xw==,iv:QBHovwOUw4USXZ2HXVlXh+KDXNrvQ+E6n0vP0TcIc/o=,tag:AKGnrhY6TSuSSVJcCGsDxw==,type:int]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age:
+        - recipient: age1797pscxj3apzjr7m9k7vamgdccc9uk5dt8p2d0fkg22k0e8zfylsazgxel
+          enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAyVTd1aEVYNTlDWGlmaVJJ
+            WmtTYnpvMExtOXhmbUlNVnFzNXVRM3Z3VUdrClZQTkRWVmZ4Z282Mk1heG5VUEZY
+            S0RhRFVrV3V6bTdxRFFUZVhqNnpKbk0KLS0tIFpkN01QZ0hVV2dUMXZCVWxzTDNI
+            QVYyZ0RNME1OVTRmYTVvMXQwcUdyY0EKHQTiEEyWapeXyqzvEvAYdHZT5gGtaY69
+            c1+Cy5pXGwZId6cqIipytBJS+jX9qMYNCmQnc2WN3KYym44HF8DTMg==
+            -----END AGE ENCRYPTED FILE-----
+    lastmodified: "2022-08-13T20:44:13Z"
+    mac: ENC[AES256_GCM,data:muembjeiHTVMnq2HQB5y0Lds8vueDf9KIXsDzZ67Ewu+K1XbRBwn4ezDVe4LY1a60EfG+1FlDTUG+zD3beYleywuszcpYmGmnTT1ICkRmvz6+Q9UjLvQRSsEu0XKH38IAGfCTtPpHoptAf/YQVQsqf9Q8e0aT+Ta/o+Odf76alE=,iv:HPRYbS/8Z0wLE0b7yLarvd8dd2jdB+m9lSz3TVYvHjU=,tag:1sm332zqq3JIcbvPHIq0PQ==,type:str]
+    pgp: []
+    encrypted_regex: replicaCount
+    version: 3.7.3

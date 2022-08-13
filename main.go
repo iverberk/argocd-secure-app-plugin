@@ -40,6 +40,27 @@ func decrypt(data []byte) []byte {
 	return data
 }
 
+// mergeMaps merges two maps. In case of equal keys, both in level and name, the value
+// from the second map takes precedence.
+func mergeMaps(a, b map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(a))
+	for k, v := range a {
+		out[k] = v
+	}
+	for k, v := range b {
+		if v, ok := v.(map[string]interface{}); ok {
+			if bv, ok := out[k]; ok {
+				if bv, ok := bv.(map[string]interface{}); ok {
+					out[k] = mergeMaps(bv, v)
+					continue
+				}
+			}
+		}
+		out[k] = v
+	}
+	return out
+}
+
 // helm tries to load a Helm chart and run the template command,
 // after potentially decrypting the values with SOPS.
 func helm(source string) ([]byte, error) {
@@ -85,15 +106,17 @@ func helm(source string) ([]byte, error) {
 		}
 	}
 
-	// Gather values files. We check for a `values.yaml` file
-	// in the root directory. All other values files, encrypted
-	// or not, are expected to be in a `values` subdirectory.
-	var values []byte
+	// Gather values files. We check for a `values.yaml` file in the root directory.
+	// All other values files, encrypted or not, are expected to be in a `values` subdirectory.
+	var values map[string]interface{}
 
-	data, err := os.ReadFile(filepath.Join(source, "values.yaml"))
+	f := filepath.Join(source, "values.yaml")
+	data, err := os.ReadFile(f)
 	if err == nil {
-		data = append([]byte(YAML_DELIMITER), decrypt(data)...)
-		values = append(values, decrypt(data)...)
+		// Decode the values file to a map
+		if err := yaml.Unmarshal(decrypt(data), &values); err != nil {
+			log.Fatal().Str("file", f).Err(err).Msg("Unable to YAML decode values file")
+		}
 	} else {
 		log.Warn().Err(err).Msg("Unable to load default values file, checking for other values")
 	}
@@ -107,12 +130,19 @@ func helm(source string) ([]byte, error) {
 				continue
 			}
 
-			data, err := os.ReadFile(filepath.Join(source, "values", vf.Name()))
+			f := filepath.Join(source, "values", vf.Name())
+			data, err := os.ReadFile(f)
 			if err == nil {
-				data = append([]byte(YAML_DELIMITER), decrypt(data)...)
-				values = append(values, decrypt(data)...)
+				// Decode the values file to a map
+
+				var overrides map[string]interface{}
+				if err := yaml.Unmarshal(decrypt(data), &overrides); err != nil {
+					log.Fatal().Str("file", f).Err(err).Msg("Unable to YAML decode values file")
+				}
+
+				values = mergeMaps(values, overrides)
 			} else {
-				log.Fatal().Str("file", vf.Name()).Err(err).Msg("Unable to read values file")
+				log.Fatal().Str("file", f).Err(err).Msg("Unable to read values file")
 			}
 		}
 	}
@@ -126,8 +156,14 @@ func helm(source string) ([]byte, error) {
 	// Execute Helm templating
 	cmd := exec.Command("helm", "template", "-n", os.Getenv(`ARGOCD_APP_NAMESPACE`), os.Getenv(`ARGOCD_APP_NAME`), source, "-f", "-")
 
+	// Marshall the values map to an array of bytes
+	b, err := yaml.Marshal(values)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Could not marshall the values map to bytes")
+	}
+
 	// Feed the values via stdin
-	cmd.Stdin = bytes.NewReader(values)
+	cmd.Stdin = bytes.NewReader(b)
 	var stderr = bytes.Buffer{}
 	var stdout = bytes.Buffer{}
 	cmd.Stderr = &stderr
