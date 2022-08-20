@@ -201,12 +201,11 @@ func manifests(path string) ([]byte, error) {
 			}
 			manifest = append([]byte(YAML_DELIMITER), decrypt(manifest)...)
 			manifests = append(manifests, manifest...)
+			manifests = append(manifests, []byte("\n")...)
 		} else {
 			log.Fatal().Str("file", f.Name()).Err(err).Msg("Unable to read manifest file")
 		}
 	}
-
-	manifests = append(manifests, []byte("\n")...)
 
 	return manifests, nil
 }
