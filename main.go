@@ -254,7 +254,7 @@ func generate(rootDir string) string {
 	for s1 := range sources {
 		for s2 := range sources {
 			if s1 != s2 && strings.HasPrefix(s2, s1+"/") {
-				log.Info().Str("s1", s1).Str("s2", s2).Msg("Compare")
+				log.Info().Str("root source", s1).Str("sub-source", s2).Msg("Pruning subpath source from root source")
 				delete(sources, s2)
 			}
 		}
