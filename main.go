@@ -94,7 +94,7 @@ func helm(source string) ([]byte, error) {
 		for _, dependency := range chart.Metadata.Dependencies {
 			log.Info().Str("Repository", dependency.Repository).Msg("Adding new Helm repo")
 
-			var args = []string{"repo", "add", dependency.Name, dependency.Repository}
+			var args = []string{"repo", "add", dependency.Name, dependency.Repository, "--force-update"}
 
 			args = append(args, credArgs...)
 			args = append(args, caArgs...)
