@@ -46,7 +46,7 @@ func checkDir(path string) error {
 		return err
 	}
 
-	resources := generate(path)
+	resources := generateManifests(path)
 
 	expected, err := ioutil.ReadFile(path + "/expected.txt")
 	if err != nil {
