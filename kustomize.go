@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 	"sigs.k8s.io/kustomize/api/krusty"
@@ -53,15 +52,7 @@ func kustomize(source string) ([]byte, error) {
 		return nil, err
 	}
 
-	// Check if we need to transform the Kustomize output.
-	f := filepath.Join(source, "transform.jq")
-	query, err := os.ReadFile(f)
-	if err == nil {
-		out = transform(out, string(query))
-	} else {
-		log.Warn().Err(err).Msg("Unable to load JQ transform file, skipping transformation")
-	}
+	out = append([]byte(YAML_DELIMITER), out...)
 
-	// Return the generated manifests
 	return out, nil
 }

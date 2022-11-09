@@ -1,0 +1,6 @@
+---
+resources:
+  - ca.yaml
+
+generators:
+  - secret-generator.yaml

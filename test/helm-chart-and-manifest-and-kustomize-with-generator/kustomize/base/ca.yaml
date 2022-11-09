@@ -1,37 +1,36 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  selfSigned: {}
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
+  name: cluster-ca
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-  name: cluster-ca
 spec:
-  commonName: cluster-ca-edited
   isCA: true
-  issuerRef:
-    group: cert-manager.io
-    kind: ClusterIssuer
-    name: selfsigned
+  commonName: cluster-ca
+  secretName: cluster-ca
   privateKey:
     algorithm: ECDSA
     size: 256
-  secretName: cluster-ca
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
+    group: cert-manager.io
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
+  name: ca
   annotations:
     argocd.argoproj.io/sync-wave: "1"
-  name: ca
 spec:
   ca:
     secretName: cluster-ca
----
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
-  name: selfsigned
-spec:
-  selfSigned: {}
