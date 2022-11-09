@@ -18,6 +18,9 @@ jobs:
       with:
         go-version: 1.18
 
+    - name: Install ksops
+      run: curl -s https://raw.githubusercontent.com/viaduct-ai/kustomize-sops/master/scripts/install-ksops-archive.sh | bash
+
     - name: Build
       run: go build -v ./...
 
