@@ -2,7 +2,7 @@
 
 This repository contains a simple Argo CD plugin that serves the following purposes:
 
-- Allow multiple sources (Helm charts, plan manifests, Kustomize (TODO)) to generate application resources
+- Allow multiple sources (Helm charts, plain manifests, Kustomize) to generate application resources
 - Automatically decrypt SOPS encrypted files while processing
 - Use standard input to pass decrypted resources. Never write decrypted files to disk unless absolutely necessary.
 
@@ -19,16 +19,27 @@ app/helm-app-1        # A Helm chart to deploy app 1 (contains Chart.yaml and po
 app/helm-app-2        # A Helm chart to deploy app 2 (contains Chart.yaml and potentially a values.yaml)
 app/helm-app-2/values # Additional Helm values for app 2
 app/manifests         # Plain Kubernetes manifests
+app/kustomize         # Kustomize files (include at least a `kustomization.yaml`)
 app/secrets           # Encrypted Kubernetes manifests
 ```
 
 ### SOPS Decryption
 
-The plugin scans each YAML file for a top-level key called 'sops'. If it finds this key, it will automatically decrypt the file with SOPS.
+For Helm and plain manifests, the plugin scans each YAML file for a top-level key called 'sops'.
+If it finds this key, it will automatically decrypt the file with SOPS.
+
+For Kustomize, we recommend using the [`kustomize-sops`](https://github.com/viaduct-ai/kustomize-sops/) generator to decrypt secrets.
+An example can be found in [`test/kustomize-with-generator`](./test/kustomize-with-generator).
 
 ### Helm
 
 Each source directory is checked for the existence of a `Chart.yaml` file. If the chart file exists, the source is treated as a Helm chart. By default, the `values.yaml` file in the same directory (if it exists) is loaded and automatically decrypted. Additional (encrypted) Helm values can be placed in a subdirectory called `values`. They will be added to the Helm command in _lexicographic_ order, keep this in mind if you want to override values.
+
+### Kustomize
+
+Each source directory is checked for the existence of a `kustomization.yaml`.
+If this file exists, the source is treated as a kustomize folder.
+Decryption of SOPS secret is happening implicitly in this plugin if you use a [`kustomize-sops`](https://github.com/viaduct-ai/kustomize-sops/) generator.
 
 ### Manifests
 
@@ -42,6 +53,8 @@ Build the plugin and make sure that the binary is somewhere in your path. Move t
 
 **IMPORTANT**: if you use Helm charts, you need to set the `ARGOCD_APP_NAME` environment variable so that Helm correctly sets the metadata on resources.
 
+**IMPORTANT**: to use SOPS secrets in Kustomize, you should install the [`kustomize-sops`](https://github.com/viaduct-ai/kustomize-sops/) plugin into `~/.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops`.
+
 ### Within ArgoCD
 
 TODO: Create a plugin docker image and add it as an additional container to the ArgoCD depoyment.
@@ -49,3 +62,5 @@ TODO: Create a plugin docker image and add it as an additional container to the 
 ## Development and Testing
 
 You can develop this plugin with Go 1.18. Tests can be run with `go test ./...`. The format of the tests should be self-explanatory if you look at the examples in the `test` directory.
+
+To let the Kustomize tests pass, you will need to install the [`kustomize-sops`](https://github.com/viaduct-ai/kustomize-sops/) plugin into `~/.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops`.

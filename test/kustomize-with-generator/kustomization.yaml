@@ -1,0 +1,7 @@
+---
+resources:
+  - base/
+
+patchesStrategicMerge:
+  # override the base with a new ca file
+  - ca.yaml
