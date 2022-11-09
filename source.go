@@ -61,7 +61,7 @@ func buildSources(rootDir string) []string {
 }
 
 // generateManifests processes each source to generate manifests. This can be done through
-// a combination of plain manifests, Helm chart and potential transformations.
+// a combination of plain manifests, Helm chart, Kustomize and potential transformations.
 func generateManifests(rootDir string) string {
 
 	// Build a list of source directories
@@ -72,6 +72,12 @@ func generateManifests(rootDir string) string {
 		log.Info().Str("source", source).Msg("Processing source")
 
 		output, err := helm(source)
+		if output != nil && err == nil {
+			result = append(result, output...)
+			continue
+		}
+
+		output, err = kustomize(source)
 		if output != nil && err == nil {
 			result = append(result, output...)
 			continue
