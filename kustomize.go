@@ -47,7 +47,7 @@ func kustomize(source string) ([]byte, error) {
 		return nil, nil
 	}
 
-	out, err := build("./" + source)
+	out, err := build(source)
 	if err != nil {
 		return nil, err
 	}
