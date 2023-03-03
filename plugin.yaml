@@ -7,3 +7,5 @@ spec:
   version: v0.9.16
   generate:
     command: ["argocd-secure-app-plugin"]
+  discover:
+    fileName: "*"
