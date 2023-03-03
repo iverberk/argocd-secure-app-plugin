@@ -4,7 +4,7 @@ kind: ConfigManagementPlugin
 metadata:
   name: argocd-secure-app-plugin
 spec:
-  version: v0.9.16
+  version: v0.10.3
   generate:
     command: ["argocd-secure-app-plugin"]
   discover:
